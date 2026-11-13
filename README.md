@@ -9,6 +9,37 @@ case briefs grounded in RBI and FIU-IND guidance, with citations.
 `Java 21` · `Spring Boot 4` · `Spring Cloud Gateway` · `Kafka` · `Redis` · `PostgreSQL + pgvector` ·
 `LangChain4j (RAG)` · `React 19` · `Docker` · `Kubernetes`
 
+## Quick start
+
+The fastest way to run the complete demo is Docker Compose. Make sure Docker Desktop is running, then:
+
+```bash
+git clone https://github.com/chityalasrakshin/Vasavi.git
+cd Vasavi
+docker compose up --build
+```
+
+Open [http://localhost:3001](http://localhost:3001). The demo console accepts `analyst` / `fraudshield`
+or `lead` / `fraudshield`. Start traffic from the Live monitor to back-fill synthetic history and stream
+payments, then use **Launch an attack** to create an investigation case.
+
+The default setup does not require an external AI provider. The copilot uses its deterministic, cited
+fallback. To connect an optional OpenAI-compatible, Anthropic, or Ollama provider, copy `.env.example` to
+`.env` and set the provider variables before starting Compose. Never commit `.env` or real credentials.
+
+### Local endpoints
+
+| Component | URL / port | Purpose |
+|---|---|---|
+| Frontend | [localhost:3001](http://localhost:3001) | React dashboard served by nginx |
+| Gateway | `localhost:8081` | REST and SSE API entry point |
+| Risk engine | `8082` inside Compose | Payment scoring, feature store, model and graph |
+| Transaction service | `8081` inside Compose | Payments, idempotency, outbox and simulator |
+| Case service | `8083` inside Compose | Cases, live feed, knowledge base and copilot |
+| PostgreSQL / pgvector | `5432` inside Compose | Transaction and case persistence |
+| Redis | `6379` inside Compose | Features, graph, model and rate limits |
+| Kafka | `9092` inside Compose | Event transport |
+
 > **Who is this page for?** Everyone. Start with [The problem](#the-problem) and [Screens](#screens)
 > for the product, [Run it](#run-it) and [How to test it](#how-to-test-it) to try it, and
 > [How it works](docs/HOW-IT-WORKS.md) for the full walkthrough. Designers: see [For designers](#for-designers).
@@ -145,7 +176,19 @@ Requirements: Docker with about 4 GB of memory for containers.
 
 ```bash
 docker compose up --build        # first build takes a few minutes
-open http://localhost:3001       # landing page; "Open the console" signs in (analyst / fraudshield)
+open http://localhost:3001       # macOS; on Windows or Linux open the URL in a browser
+```
+
+To stop the stack while preserving database volumes:
+
+```bash
+docker compose down
+```
+
+To reset all demo data and make the next run start from a clean state:
+
+```bash
+docker compose down -v
 ```
 
 On the **Live monitor**, press **Start traffic**. FraudShield first back-fills 30 days of history for
